@@ -1,0 +1,37 @@
+{
+  "name": "tymfrontiers-cdn/php-sos-userprofile",
+  "description": "PHP: User Profile Trait (for 7 OS -Web)",
+  "keywords": ["php","frontiers", "user", "profile"],
+  "homepage": "https://github.com/tymfrontiers-cdn/php-sos-userprofile",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+      {
+          "name": "Sir Louis",
+          "email": "me@sirlouis.io",
+          "homepage": "https://sirlouis.io",
+          "role": "developer"
+      },
+      {
+          "name": "Tym Frontiers Ltd",
+          "email": "git@tymfrontiers.com",
+          "homepage": "https://tymfrontiers.com",
+          "role": "developer"
+      }
+  ],
+  "require": {
+    "php" : ">=7.0",
+    "tymfrontiers-cdn/php-data" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-instance-error" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-validator" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-generic" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-multiform" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-file" : ">=0.1@stable"
+  },
+  "require-dev": {},
+  "autoload": {
+      "psr-4": {
+          "SOS\\": "src/"
+      }
+  }
+}
