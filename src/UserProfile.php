@@ -22,7 +22,12 @@ trait UserProfile {
 
   protected $_updated;
 
-
+  public static function profile(string $user_id, string $id_type="id") {
+    if ($profile = self::find($user_id, $id_type)) {
+      return $profile[0];
+    }
+    return null;
+  }
   public static function find($user, string $by="id"){
     static::_checkEnv();
     global $database;
