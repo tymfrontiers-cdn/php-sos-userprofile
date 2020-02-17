@@ -60,8 +60,8 @@ trait UserProfile {
             LEFT JOIN {$data_db}.country AS c ON c.code = usrp.country_code
             LEFT JOIN {$data_db}.state AS s ON s.code = usrp.state_code
             LEFT JOIN {$data_db}.city AS ci ON ci.code = usrp.city_code
-            LEFT JOIN :db:.setting AS stt ON stt.user=usr._id AND stt.skey='USER.AVATAR'
-            LEFT JOIN `{$file_db}`.`{$file_tbl}` AS f ON f.id = stt.sval ";
+            LEFT JOIN `{$file_db}`.`file_default` AS fd ON fd.`user` = usr._id AND fd.set_key = 'USER.AVATAR'
+            LEFT JOIN `{$file_db}`.`{$file_tbl}` AS f ON f.id = fd.file_id ";
     if( $by == 'id' ){
       $sql .= " WHERE usr._id IN({$in}) ";
     }elseif( $by == 'email' ){
@@ -74,7 +74,7 @@ trait UserProfile {
       foreach ($found as $i=>$obj) {
         $found[$i]->avatar = (!empty($obj->avatar) && Generic::urlExist($obj->avatar))
           ? $obj->avatar
-          : $whost . \strtolower("/assets/img/{$obj->sex}-avatar.png");
+          : $whost . \strtolower("/user/assets/img/default-avatar.png");
       }
     }
     return $found;
