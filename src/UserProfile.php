@@ -9,6 +9,7 @@ use \TymFrontiers\InstanceError,
 
 trait UserProfile {
   public $id;
+  public $alias = NULL;
   public $name;
   public $surname;
   public $sex;
@@ -24,21 +25,15 @@ trait UserProfile {
 
   public static function profile(string $user_id, string $id_type="id") {
     if ($profile = self::find($user_id, $id_type)) {
-      return $profile[0];
+      return $profile;
     }
     return null;
   }
-  public static function find($user, string $by="id"){
+  public static function find(string $uid){
     static::_checkEnv();
     global $database;
-    $by = \in_array( \strtolower($by),["email","id","phone"]) ? \strtolower($by) : "id";
-    $in = [];
-    if( \is_array($user) ){
-      foreach($user as $usr){
-        $in[] = $database->escapeValue($usr);
-      }
-    }else{ $in[] = $database->escapeValue($user); }
-    $in = "'" . \implode("','",$in) . "'";
+    $uid = $database->escapeValue($uid);
+    $valid = new Validator;
     $whost = WHOST;
     $data_db = MYSQL_DATA_DB;
     $file_db = MYSQL_FILE_DB;
@@ -48,6 +43,7 @@ trait UserProfile {
                    usrp.name, usrp.surname,
                    usrp.sex, usrp.dob, usrp._updated,
                    usrp.address, usrp.zip_code,
+                   usra.alias,
                    c.code AS country_code, c.name AS country,
                    s.name AS state, s.code AS state_code,
                    ci.name AS city,ci.code AS city_code,
@@ -57,25 +53,34 @@ trait UserProfile {
 
             FROM :db:.:tbl: AS usr
             LEFT JOIN :db:.user_profile AS usrp ON usrp.user = usr._id
+            LEFT JOIN :db:.user_alias AS usra ON usra.user = usr._id
             LEFT JOIN {$data_db}.country AS c ON c.code = usrp.country_code
             LEFT JOIN {$data_db}.state AS s ON s.code = usrp.state_code
             LEFT JOIN {$data_db}.city AS ci ON ci.code = usrp.city_code
             LEFT JOIN `{$file_db}`.`file_default` AS fd ON fd.`user` = usr._id AND fd.set_key = 'USER.AVATAR'
-            LEFT JOIN `{$file_db}`.`{$file_tbl}` AS f ON f.id = fd.file_id ";
-    if( $by == 'id' ){
-      $sql .= " WHERE usr._id IN({$in}) ";
-    }elseif( $by == 'email' ){
-      $sql .= " WHERE usr.email IN({$in}) ";
-    }else{
-      $sql .= " WHERE usr.phone IN({$in}) ";
+            LEFT JOIN `{$file_db}`.`{$file_tbl}` AS f ON f.id = fd.file_id
+            WHERE 1=1 ";
+    if ( $valid->username($uid,["uid", "username", 3, 12, [], "mixed"]) ) {
+      $sql .= " AND usr._id = '{$uid}'
+        OR usr._id = (
+          SELECT `user`
+          FROM :db:.`user_alias`
+          WHERE `alias` = '{$uid}'
+          LIMIT 1
+        )";
+    } else if ( $valid->email($uid,["email","email"]) ){
+      $sql .= " AND usr.email = '{$uid}' ";
+    } else if ($valid->tel($uid, ["uid", "tel"])) {
+      $sql .= " AND usr.phone = '{$uid}' ";
+    } else {
+      return NULL;
     }
     $found =  self::findBySql($sql);
     if ($found) {
-      foreach ($found as $i=>$obj) {
-        $found[$i]->avatar = (!empty($obj->avatar) && Generic::urlExist($obj->avatar))
-          ? $obj->avatar
-          : $whost . \strtolower("/user/assets/img/default-avatar.png");
-      }
+      $found = $found[0];
+      $found->avatar = (!empty($found->avatar) && Generic::urlExist($found->avatar))
+        ? $found->avatar
+        : $whost . \strtolower("/user/assets/img/default-avatar.png");
     }
     return $found;
   }
@@ -88,5 +93,12 @@ trait UserProfile {
       }
     }
     return $profile->create($conn);
+  }
+  public static function getId(string $alias) {
+    global $database;
+    if ($usr = (new MultiForm(MYSQL_BASE_DB, "user_alias", "user"))->findBySql("SELECT `user` FROM :db:.:tbl: WHERE `alias` = '{$database->escapeValue($alias)}' LIMIT 1")) {
+      return $usr[0]->user;
+    }
+    return NULL;
   }
 }
