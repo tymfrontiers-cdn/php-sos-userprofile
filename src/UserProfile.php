@@ -80,7 +80,7 @@ trait UserProfile {
       $found = $found[0];
       $found->avatar = (!empty($found->avatar) && Generic::urlExist($found->avatar))
         ? $found->avatar
-        : $whost . \strtolower("/user/assets/img/default-avatar.png");
+        : $whost . "/user/assets/img/default-avatar.png";
     }
     return $found;
   }
