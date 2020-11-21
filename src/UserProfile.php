@@ -48,7 +48,7 @@ trait UserProfile {
                    s.name AS state, s.code AS state_code,
                    ci.name AS city,ci.code AS city_code,
                    (
-                     SELECT CONCAT('{$whost}','/file/',f._name)
+                     SELECT CONCAT('{$whost}','/app/file/',f._name)
                    ) AS avatar
 
             FROM :db:.:tbl: AS usr
