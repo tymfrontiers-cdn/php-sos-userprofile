@@ -60,7 +60,7 @@ trait UserProfile {
             LEFT JOIN `{$file_db}`.`file_default` AS fd ON fd.`user` = usr._id AND fd.set_key = 'USER.AVATAR'
             LEFT JOIN `{$file_db}`.`{$file_tbl}` AS f ON f.id = fd.file_id
             WHERE 1=1 ";
-    if ( $valid->username($uid,["uid", "username", 3, 12, [], "mixed", [".","-","_"]]) ) {
+    if ( $valid->username($uid,["uid", "username", 3, 12, [], "mixed"]) ) {
       $sql .= " AND usr._id = '{$uid}'
         OR usr._id = (
           SELECT `user`
